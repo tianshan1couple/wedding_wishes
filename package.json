@@ -7,8 +7,36 @@
     "dev": "webpack serve --config webpack.config.js",
     "build": "webpack --config webpack.config.js"
   },
-  "keywords": ["wedding", "祝福", "动画", "confetti", "fireworks"],
+  "keywords": [
+    "wedding",
+    "祝福",
+    "动画",
+    "confetti",
+    "fireworks"
+  ],
   "author": "",
   "license": "UNLICENSED",
-  "devDependencies": {}
+  "devDependencies": {
+    "@jest/globals": "^29.5.0",
+    "compression-webpack-plugin": "^11.1.0",
+    "copy-webpack-plugin": "^13.0.0",
+    "cross-env": "^10.0.0",
+    "css-loader": "^6.8.1",
+    "css-minimizer-webpack-plugin": "^7.0.2",
+    "eslint": "^8.57.0",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.5.3",
+    "identity-obj-proxy": "^3.0.0",
+    "image-webpack-loader": "^8.1.0",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
+    "mini-css-extract-plugin": "^2.9.2",
+    "node-gzip": "^1.1.2",
+    "serve": "^14.2.0",
+    "style-loader": "^3.3.3",
+    "terser-webpack-plugin": "^5.3.14",
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  }
 }

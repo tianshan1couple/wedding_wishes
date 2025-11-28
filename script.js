@@ -1,4 +1,6 @@
 // 核心：音乐控制、祝福语轮播、滚动渐入、庆祝烟花/彩带、花瓣/爱心飘落
+// 构建模式下通过 webpack 注入样式
+import './styles.css';
 
 (() => {
   const musicBtn = document.getElementById('music-btn');
@@ -6,6 +8,7 @@
   const wishText = document.getElementById('wish-text');
   const canvas = document.getElementById('fx-canvas');
   const ctx = canvas.getContext('2d');
+  const countdownEl = document.getElementById('countdown');
 
   // 祝福文案（可自定义）
   const wishes = [
@@ -33,6 +36,31 @@
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
   }, { threshold: 0.12 });
   revealEls.forEach(el => io.observe(el));
+
+  // 倒计时逻辑
+  function pad(n){return n<10?"0"+n:""+n}
+  function updateCountdown(){
+    if(!countdownEl) return;
+    const targetDateStr = countdownEl.getAttribute('data-date');
+    const target = targetDateStr? new Date(targetDateStr): null;
+    if(!target || isNaN(target.getTime())) return;
+    const now = new Date();
+    let diff = target.getTime() - now.getTime();
+    if(diff < 0) diff = 0;
+    const sec = Math.floor(diff/1000);
+    const days = Math.floor(sec/86400);
+    const hours = Math.floor((sec%86400)/3600);
+    const minutes = Math.floor((sec%3600)/60);
+    const seconds = sec%60;
+    countdownEl.querySelector('[data-part="days"]').textContent = pad(days);
+    countdownEl.querySelector('[data-part="hours"]').textContent = pad(hours);
+    countdownEl.querySelector('[data-part="minutes"]').textContent = pad(minutes);
+    countdownEl.querySelector('[data-part="seconds"]').textContent = pad(seconds);
+    if(diff===0){
+      countdownEl.classList.add('finished');
+    }
+  }
+  setInterval(updateCountdown,1000);updateCountdown();
 
   // 音乐：尝试加载文件，不可用则合成伴奏
   let audio, audioCtx, oscGain;
@@ -101,7 +129,22 @@
         vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
         g: 0.05, life: rand(70, 140),
         color: `hsl(${Math.floor(rand(0,360))}deg,100%,70%)`,
-        type: 'spark', size: rand(1.5, 3.5)
+        type: 'spark', size: rand(1.5, 3.5), trail: []
+      });
+    }
+  }
+
+  // 添加心形烟花
+  function addHeartFirework(x, y, n = 120) {
+    for (let i = 0; i < n; i++) {
+      const ang = rand(0, Math.PI * 2);
+      const spd = rand(1.8, 5.2);
+      particles.push({
+        x, y,
+        vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        g: 0.04, life: rand(80, 150),
+        color: `hsl(${Math.floor(rand(300,360))}deg,100%,70%)`,
+        type: 'heartSpark', size: rand(2, 3.8), trail: []
       });
     }
   }
@@ -111,17 +154,54 @@
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.vy += p.g; p.x += p.vx; p.y += p.vy; p.life--;
-      ctx.globalCompositeOperation = 'screen';
+      ctx.globalCompositeOperation = 'lighter';
+
+      // 拖尾记录
+      if (p.trail) {
+        p.trail.push({ x: p.x, y: p.y, life: p.life });
+        if (p.trail.length > 8) p.trail.shift();
+      }
+      // 绘制拖尾
+      if (p.trail && p.trail.length > 2) {
+        ctx.beginPath();
+        for (let t = 0; t < p.trail.length; t++) {
+          const seg = p.trail[t];
+          const alpha = t / p.trail.length;
+          ctx.fillStyle = p.color.replace('70%)', `${Math.min(90, 70 + alpha*20)}%)`);
+          ctx.globalAlpha = alpha * 0.5;
+          ctx.fillRect(seg.x, seg.y, 2, 2);
+        }
+        ctx.globalAlpha = 1;
+      }
+
       ctx.fillStyle = p.color;
       ctx.beginPath();
-      if (p.type === 'confetti') ctx.rect(p.x, p.y, p.size, p.size * 1.8);
-      else ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      if (p.type === 'confetti') {
+        ctx.rect(p.x, p.y, p.size, p.size * 1.8);
+      } else if (p.type === 'heartSpark') {
+        drawHeart(ctx, p.x, p.y, p.size);
+      } else {
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      }
       ctx.fill();
       if (p.life <= 0 || p.y > canvas.height + 50) particles.splice(i, 1);
     }
     requestAnimationFrame(step);
   }
   step();
+
+  // 画心形
+  function drawHeart(context, x, y, s) {
+    context.save();
+    context.translate(x, y);
+    context.scale(s * 0.4, s * 0.4);
+    context.beginPath();
+    context.moveTo(0, -12);
+    context.bezierCurveTo(-12, -28, -38, -4, 0, 16);
+    context.bezierCurveTo(38, -4, 12, -28, 0, -12);
+    context.closePath();
+    context.restore();
+  }
 
   // 花瓣/爱心飘落
   function spawnFaller(kind = 'petal') {
@@ -143,10 +223,23 @@
     addConfettiBurst(cx, cy);
     // 边缘也来一点
     addConfettiBurst(rand(50, canvas.width - 50), rand(50, canvas.height / 2));
+    // 心形烟花
+    addHeartFirework(cx + rand(-120,120), cy + rand(-40,60));
   }
 
   // 绑定事件
   musicBtn?.addEventListener('click', toggleMusic);
   celebrateBtn?.addEventListener('click', celebrate);
   setupAudio();
+
+  // 翻牌交互
+  document.querySelectorAll('.flip-card').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('flipped'));
+    card.addEventListener('keypress', e => {
+      if (e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        card.classList.toggle('flipped');
+      }
+    });
+  });
 })();

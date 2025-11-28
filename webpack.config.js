@@ -48,7 +48,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'js/[name].[contenthash].js',
-    publicPath: '/',
+    publicPath: '', // 使用相对路径以兼容静态托管子路径
     clean: true,
   },
   plugins: [
@@ -58,14 +58,7 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        {
-          from: 'assets',
-          to: 'assets'
-        },
-        {
-          from: 'styles.css',
-          to: 'styles.css'
-        }
+        { from: 'assets', to: 'assets' }
       ]
     }),
     new CompressionPlugin({
