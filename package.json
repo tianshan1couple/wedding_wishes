@@ -1,0 +1,14 @@
+{
+  "name": "wedding-wishes-ghs-lzt",
+  "version": "1.0.0",
+  "description": "李志添 & 甘慧珊 新婚祝福网页：精美动画与互动，支持直接打开或webpack开发。",
+  "private": true,
+  "scripts": {
+    "dev": "webpack serve --config webpack.config.js",
+    "build": "webpack --config webpack.config.js"
+  },
+  "keywords": ["wedding", "祝福", "动画", "confetti", "fireworks"],
+  "author": "",
+  "license": "UNLICENSED",
+  "devDependencies": {}
+}
