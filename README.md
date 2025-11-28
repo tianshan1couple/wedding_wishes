@@ -59,8 +59,21 @@ Wedding-wishes-for-GHS-LZT/
 - 更换音乐：将音频文件置于 `assets/audio/wedding-music.mp3`，或保持自动合成模式
 
 ## 🚀 部署
+可选方式：
 
-将这三个文件 `index.html`、`styles.css`、`script.js` 与资源目录 `assets/` 上传至任意静态托管（GitHub Pages、Vercel、Netlify等）即可。
+- 静态托管（GitHub Pages/Vercel/Netlify 等）：上传 `dist/` 即可。
+- Cloudflare Workers 静态资源部署：本项目已集成 `wrangler.toml` 与 `worker.js`，按以下步骤部署：
+
+```powershell
+# 1. 构建产物
+npm run build
+
+# 2. 使用 wrangler 部署（需安装 Cloudflare Wrangler CLI）
+# 安装：npm i -g wrangler
+npm run deploy
+```
+
+wrangler 会将 `dist/` 作为静态资源挂载并通过 `worker.js` 服务，根路径与未命中的子路径会回退到 `index.html`。
 
 ## ❤️ 寄语
 

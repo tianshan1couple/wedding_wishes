@@ -1,0 +1,11 @@
+name = "wedding-wishes-ghs-lzt"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# 将构建产物目录作为静态资源目录
+[assets]
+directory = "dist"
+binding = "ASSETS"
+
+[vars]
+APP_NAME = "Wedding Wishes for GHS & LZT"
